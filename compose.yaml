@@ -1,0 +1,33 @@
+name: pgai
+services:
+  db:
+    image: timescale/timescaledb-ha:pg17
+    environment:
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - /home/pgdata:/home/postgres/pgdata/data:Z
+    command: [ "-c", "ai.ollama_host=http://192.168.137.117:11434" ]
+  vectorizer-worker:
+    image: timescale/pgai-vectorizer-worker:latest
+    environment:
+      PGAI_VECTORIZER_WORKER_DB_URL: postgres://postgres:postgres@db:5432/postgres
+      OLLAMA_HOST: http://192.168.137.117:11434
+    command: [ "--poll-interval", "5s", "--log-level", "DEBUG" ]
+  neo4j:
+    image: neo4j
+    ports:
+      - 7474:7474
+      - 7687:7687
+    volumes:
+      - /home/neodata:/data:Z
+    environment:
+      NEO4J_AUTH: "neo4j/c4l3nd4R"
+      NEO4J_apoc_export_file_enabled: "true"
+      NEO4J_apoc_import_file_enabled: "true"
+      NEO4J_apoc_import_file_use__neo4j__config: "true"
+      NEO4J_dbms_security_procedures_unrestricted: "apoc.*"
+volumes:
+  pgdata:
+  neodata:
